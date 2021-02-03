@@ -19,8 +19,9 @@ const io = socketio(server)
  io.on("connection", (socket) => {
      console.log("new users is connecting")
 
-     socket.on("join", ({username, room}, callback) => {
-        const {error, user} = addUser({id: socket.id, username, room})
+       socket.on('join', (options, callback) => {
+            const { error, user } = addUser({ id: socket.id, ...options })
+        
 
 if (error) {
     return callback(error)
@@ -55,18 +56,15 @@ socket.on("location", (coords, callback)=> {
      })
 
 socket.on('disconnect', () => {
-const user = removeUser(socket.id)
+    const user = removeUser(socket.id)
 
-if (user) {
-    io.to(user.room).emit("message", generateMessage('Admin',`${user.username} has left`))
-
-}
-
-io.to(user.room).emit("roomData", {
-    room: user.room,
-    users: getUsersRoom(user.room)
-})
-
+    if (user) {
+        io.to(user.room).emit('message', generateMessage('Admin', `${user.username} has left!`))
+        io.to(user.room).emit('roomData', {
+            room: user.room,
+            users: getUsersRoom(user.room)
+        })
+    }
 })
 
  })
